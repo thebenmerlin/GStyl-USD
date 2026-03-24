@@ -304,15 +304,24 @@
 
     /* ── CAMERA MODAL ── */
     #camera-modal {
-      position: fixed; inset: 0; z-index: 400;
-      background: rgba(0,0,0,0.8);
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(4px);
-      display: flex; flex-direction: column; justify-content: flex-end;
-      opacity: 0; pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s;
     }
-    #camera-modal.open { opacity: 1; pointer-events: auto; }
-    
+
+    #camera-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .camera-sheet {
       background: #111;
       border-top-left-radius: 24px;
@@ -322,22 +331,39 @@
       transition: transform 0.4s cubic-bezier(.25, .46, .45, .94);
       border-top: 1px solid #222;
     }
-    #camera-modal.open .camera-sheet { transform: translateY(0); }
-    
+
+    #camera-modal.open .camera-sheet {
+      transform: translateY(0);
+    }
+
     .camera-sheet-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 24px;
     }
+
     .camera-sheet-title {
-      font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
     }
-    
+
     .camera-btn {
-      background: none; border: none; color: var(--grey);
-      font-size: 20px; cursor: pointer; display: flex; align-items: center;
+      background: none;
+      border: none;
+      color: var(--grey);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
       transition: color 0.2s;
     }
-    .camera-btn:hover, .camera-btn.active { color: var(--white); }
+
+    .camera-btn:hover,
+    .camera-btn.active {
+      color: var(--white);
+    }
 
     .actions {
       display: flex;
@@ -433,6 +459,29 @@
       background: #0f0f0f;
     }
 
+    /* ── INLINE SEARCH ── */
+    .search-input {
+      background: transparent;
+      border: 1px solid #282828;
+      color: var(--white);
+      padding: 5px 10px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      outline: none;
+      transition: width 0.3s, border-color 0.2s;
+      width: 110px;
+    }
+    .search-input::placeholder {
+      color: var(--grey);
+    }
+    .search-input:focus {
+      border-color: var(--white);
+      width: 150px;
+      background: #0f0f0f;
+    }
+
     /* ── LIKED DRAWER ── */
     #liked-drawer {
       position: fixed;
@@ -483,7 +532,8 @@
       padding: 20px;
       overflow-y: auto;
       flex-grow: 1;
-      padding-bottom: 120px; /* space for checkout btn */
+      padding-bottom: 120px;
+      /* space for checkout btn */
     }
 
     .liked-item {
@@ -523,8 +573,8 @@
 
     .drawer-footer {
       position: absolute;
-      bottom: 0; 
-      left: 0; 
+      bottom: 0;
+      left: 0;
       right: 0;
       padding: 20px;
       background: linear-gradient(to top, var(--black) 60%, transparent);
@@ -533,7 +583,7 @@
       pointer-events: none;
       z-index: 20;
     }
-    
+
     .btn-checkout {
       width: 100%;
       max-width: 320px;
@@ -549,16 +599,18 @@
       text-transform: uppercase;
       cursor: pointer;
       pointer-events: auto;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
       transition: transform 0.2s, background 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
     }
+
     .btn-checkout:active {
       transform: scale(0.96);
     }
+
     .btn-checkout:hover {
       background: var(--light-grey);
     }
@@ -732,9 +784,14 @@
     </div>
   </header>
 
-  <!-- CATEGORY PILLS -->
+  <!-- CATEGORY PILLS & SEARCH -->
   <div style="position:fixed;top:60px;left:0;right:0;z-index:90;background:var(--black);padding:10px 0 0;">
     <div class="cats" id="cats">
+      <div style="flex-shrink:0; display:flex; align-items:center;">
+        <form onsubmit="handleSearch(event)" style="display:flex;">
+          <input type="text" id="custom-search" class="search-input" placeholder="Search..." autocomplete="off">
+        </form>
+      </div>
       <div class="cat-pill active" data-cat="trending fashion">Trending</div>
       <div class="cat-pill" data-cat="luxury streetwear">Street</div>
       <div class="cat-pill" data-cat="minimalist fashion clothing">Minimal</div>
@@ -784,7 +841,8 @@
       </div>
     </div>
     <div class="drawer-footer" id="drawer-footer" style="display: none;">
-      <button class="btn-checkout" onclick="alert('Proceeding to checkout UI...');">Checkout • <span id="checkout-count">0</span> items</button>
+      <button class="btn-checkout" onclick="alert('Proceeding to checkout UI...');">Checkout • <span
+          id="checkout-count">0</span> items</button>
     </div>
   </div>
 
@@ -798,18 +856,28 @@
         <div class="camera-sheet-title">Analyze Skintone</div>
         <button class="drawer-close" onclick="closeCameraModal()">✕</button>
       </div>
-      <div style="font-size: 11px; color: var(--grey); margin-bottom: 20px; letter-spacing: 0.05em; display:flex; justify-content:space-between; align-items:flex-end;">
+      <div
+        style="font-size: 11px; color: var(--grey); margin-bottom: 20px; letter-spacing: 0.05em; display:flex; justify-content:space-between; align-items:flex-end;">
         <div>Position your face or hand inside the circle.</div>
-        <button onclick="clearCameraMemory()" style="background:none; border:none; color:var(--white); text-decoration:underline; font-family:'Courier Prime'; font-size:10px; cursor:pointer;" id="clear-skin-btn">Clear AI Match</button>
+        <button onclick="clearCameraMemory()"
+          style="background:none; border:none; color:var(--white); text-decoration:underline; font-family:'Courier Prime'; font-size:10px; cursor:pointer;"
+          id="clear-skin-btn">Clear AI Match</button>
       </div>
-      <div style="position: relative; width: 100%; height: 320px; border-radius: 16px; overflow: hidden; background: #000;">
-        <video id="camera-feed" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+      <div
+        style="position: relative; width: 100%; height: 320px; border-radius: 16px; overflow: hidden; background: #000;">
+        <video id="camera-feed" autoplay playsinline muted
+          style="width: 100%; height: 100%; object-fit: cover;"></video>
         <!-- Overlay box shadow trick to dim everything outside the circle -->
-        <div style="position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; border: 2px dashed rgba(255,255,255,0.8); transform: translate(-50%, -50%); border-radius: 50%; box-shadow: 0 0 0 4000px rgba(0,0,0,0.5); pointer-events: none;"></div>
+        <div
+          style="position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; border: 2px dashed rgba(255,255,255,0.8); transform: translate(-50%, -50%); border-radius: 50%; box-shadow: 0 0 0 4000px rgba(0,0,0,0.5); pointer-events: none;">
+        </div>
       </div>
       <canvas id="capture-canvas" style="display:none;"></canvas>
-      <input type="file" id="fallback-camera" accept="image/*" capture="user" style="display:none;" onchange="handleFallbackImage(event)">
-      <button class="btn-reload" style="width: 100%; margin-top: 24px; padding: 16px; border-color: var(--white); background: var(--white); color: var(--black);" onclick="captureAndAnalyze()">Analyze & Tailor</button>
+      <input type="file" id="fallback-camera" accept="image/*" capture="user" style="display:none;"
+        onchange="handleFallbackImage(event)">
+      <button class="btn-reload"
+        style="width: 100%; margin-top: 24px; padding: 16px; border-color: var(--white); background: var(--white); color: var(--black);"
+        onclick="captureAndAnalyze()">Analyze & Tailor</button>
     </div>
   </div>
 
@@ -846,7 +914,7 @@
       let prefHint = likedKeywords
         ? `The user likes: ${likedKeywords}. Suggest similar styles.`
         : '';
-        
+
       if (userSkintone) {
         prefHint += ` IMPORTANT: Automatically filter recommendations to ONLY include fabric colors, tones, and styles that specifically flatter a "${userSkintone}" skin tone.`;
       }
@@ -1182,7 +1250,7 @@ Rules:
         `;
         return;
       }
-      
+
       drawerFooter.style.display = 'flex';
       document.getElementById('checkout-count').textContent = liked.length;
 
@@ -1203,11 +1271,31 @@ Rules:
       document.getElementById('liked-drawer').classList.remove('open');
     }
 
+    // ── SEARCH LOGIC ──
+    function handleSearch(e) {
+      e.preventDefault();
+      const input = document.getElementById('custom-search').value;
+      if (!input.trim()) return;
+      
+      // Deactivate all pills
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      
+      currentCat = input.trim();
+      document.getElementById('cat-label').textContent = input.trim();
+      
+      document.getElementById('custom-search').blur(); // Dismiss keyboard
+      
+      cards = []; currentIndex = 0;
+      loadProducts();
+    }
+
     // ── CATEGORIES ──
     document.querySelectorAll('.cat-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
+        document.getElementById('custom-search').value = ''; // clear search
+        
         currentCat = pill.dataset.cat;
         document.getElementById('cat-label').textContent = pill.textContent;
         cards = []; currentIndex = 0;
@@ -1259,20 +1347,20 @@ Rules:
       const size = 60;
       const cx = width / 2;
       const cy = height / 2;
-      const imgData = ctx.getImageData(cx - size/2, cy - size/2, size, size);
+      const imgData = ctx.getImageData(cx - size / 2, cy - size / 2, size, size);
       const data = imgData.data;
 
       // Calculate average RGB of the region
       let r = 0, g = 0, b = 0, count = 0;
       for (let i = 0; i < data.length; i += 4) {
         r += data[i];
-        g += data[i+1];
-        b += data[i+2];
+        g += data[i + 1];
+        b += data[i + 2];
         count++;
       }
-      r = Math.round(r/count);
-      g = Math.round(g/count);
-      b = Math.round(b/count);
+      r = Math.round(r / count);
+      g = Math.round(g / count);
+      b = Math.round(b / count);
 
       // Find nearest predefined palette via standard Euclidean distance
       let bestMatch = predefinedTones[0];
@@ -1288,7 +1376,7 @@ Rules:
       userSkintone = bestMatch.tone;
       document.getElementById('camera-btn').classList.add('active');
       showToast('Detected Tone: ' + userSkintone.toUpperCase());
-      
+
       closeCameraModal();
       cards = []; currentIndex = 0;
       loadProducts();
@@ -1296,21 +1384,21 @@ Rules:
 
     function captureAndAnalyze() {
       if (!videoStream) return showToast("No camera feed.");
-      
+
       canvasElem.width = videoElem.videoWidth;
       canvasElem.height = videoElem.videoHeight;
       const ctx = canvasElem.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(videoElem, 0, 0, canvasElem.width, canvasElem.height);
-      
+
       analyzePixels(ctx, canvasElem.width, canvasElem.height);
     }
 
     function handleFallbackImage(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       const img = new Image();
-      img.onload = function() {
+      img.onload = function () {
         canvasElem.width = img.width;
         canvasElem.height = img.height;
         const ctx = canvasElem.getContext('2d', { willReadFrequently: true });
