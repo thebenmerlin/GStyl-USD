@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <title>NOIR — Fashion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Courier+Prime:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f5f0;
+      --grey: #888;
+      --light-grey: #d0d0d0;
+      --card-h: calc(100dvh - 180px);
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Courier Prime', monospace;
+      -webkit-font-smoothing: antialiased;
+      touch-action: none;
+      user-select: none;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      background: var(--black);
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      color: var(--white);
+    }
+
+    .logo span {
+      font-style: italic;
+      color: var(--grey);
+    }
+
+    .header-right {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .header-tag {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--grey);
+      border: 1px solid #333;
+      padding: 4px 8px;
+    }
+
+    /* ── MAIN STAGE ── */
+    #stage {
+      position: fixed;
+      top: 60px;
+      bottom: 110px;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    /* ── CARD STACK ── */
+    #card-stack {
+      position: relative;
+      width: min(92vw, 380px);
+      height: var(--card-h);
+    }
+
+    .card {
+      position: absolute;
+      inset: 0;
+      background: var(--black);
+      border: 1px solid #222;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: grab;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, opacity 0.4s ease;
+      will-change: transform;
+      transform-origin: 50% 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .card:active {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    /* The deck is added to DOM so top card is the last child */
+    .card:nth-last-child(1) {
+      transform: scale(1) translateY(0);
+      z-index: 10;
+      opacity: 1;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .card:nth-last-child(2) {
+      transform: scale(0.96) translateY(14px) rotate(1deg);
+      z-index: 9;
+      opacity: 0.9;
+    }
+
+    .card:nth-last-child(3) {
+      transform: scale(0.92) translateY(28px) rotate(-1.5deg);
+      z-index: 8;
+      opacity: 0.8;
+    }
+
+    .card:nth-last-child(4) {
+      transform: scale(0.88) translateY(42px) rotate(2deg);
+      z-index: 7;
+      opacity: 0.6;
+    }
+
+    .card:nth-last-child(n+5) {
+      transform: scale(0.84) translateY(56px);
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .card-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 72%;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+      filter: grayscale(30%);
+    }
+
+    .card:hover .card-img-wrap img {
+      transform: scale(1.03);
+    }
+
+    .card-store-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--black);
+      color: var(--white);
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid #333;
+    }
+
+    .card-info {
+      padding: 16px 18px 14px;
+      height: 28%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-brand {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-bottom: 4px;
+    }
+
+    .card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(17px, 4.5vw, 21px);
+      font-weight: 300;
+      line-height: 1.25;
+      color: var(--white);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 10px;
+    }
+
+    .card-price {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--white);
+    }
+
+    .card-link {
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--grey);
+      text-decoration: none;
+      border-bottom: 1px solid #333;
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .card-link:hover {
+      color: var(--white);
+      border-color: var(--white);
+    }
+
+    /* ── SWIPE OVERLAYS ── */
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.1s;
+      pointer-events: none;
+    }
+
+    .overlay-like {
+      background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.06));
+      border: 3px solid var(--white);
+    }
+
+    .overlay-nope {
+      background: linear-gradient(225deg, transparent 50%, rgba(255, 255, 255, 0.03));
+      border: 3px solid #444;
+    }
+
+    .overlay-text {
+      font-family: 'Courier Prime', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      transform: rotate(-25deg);
+      text-transform: uppercase;
+    }
+
+    .overlay-like .overlay-text {
+      color: var(--white);
+      transform: rotate(-15deg);
+    }
+
+    .overlay-nope .overlay-text {
+      color: #555;
+      transform: rotate(15deg);
+    }
+
+    /* ── BOTTOM ACTIONS ── */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: var(--black);
+      border-top: 1px solid #1e1e1e;
+      padding: 14px 20px 28px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .btn-action {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.2s;
+      font-size: 22px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-action:active {
+      transform: scale(0.9);
+    }
+
+    .btn-nope {
+      background: transparent;
+      border: 1.5px solid #333;
+      color: #555;
+    }
+
+    .btn-nope:hover {
+      border-color: #666;
+      color: #888;
+    }
+
+    .btn-like {
+      background: var(--white);
+      border: 1.5px solid var(--white);
+      color: var(--black);
+    }
+
+    .btn-like:hover {
+      background: var(--light-grey);
+    }
+
+    .btn-info {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid #252525;
+      color: var(--grey);
+      font-size: 14px;
+    }
+
+    .btn-info:hover {
+      border-color: #444;
+      color: var(--white);
+    }
+
+    /* ── CATEGORY PILLS ── */
+    .cats {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 0 20px 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .cats::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-pill {
+      flex-shrink: 0;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border: 1px solid #282828;
+      color: var(--grey);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cat-pill.active,
+    .cat-pill:hover {
+      border-color: var(--white);
+      color: var(--white);
+      background: #0f0f0f;
+    }
+
+    /* ── LIKED DRAWER ── */
+    #liked-drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--black);
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(.25, .46, .45, .94);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #liked-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 20px 14px;
+      margin-bottom: 0;
+      border-bottom: 1px solid #1e1e1e;
+      background: var(--black);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .drawer-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+    }
+
+    .drawer-close {
+      font-size: 20px;
+      color: var(--grey);
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .liked-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 20px;
+      overflow-y: auto;
+      flex-grow: 1;
+      padding-bottom: 120px; /* space for checkout btn */
+    }
+
+    .liked-item {
+      border: 1px solid #1e1e1e;
+      overflow: hidden;
+    }
+
+    .liked-item img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      filter: grayscale(20%);
+      display: block;
+    }
+
+    .liked-item-info {
+      padding: 10px 10px 12px;
+    }
+
+    .liked-item-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--white);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .liked-item-price {
+      font-size: 11px;
+      color: var(--grey);
+      margin-top: 4px;
+    }
+
+    .drawer-footer {
+      position: absolute;
+      bottom: 0; 
+      left: 0; 
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(to top, var(--black) 60%, transparent);
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+    
+    .btn-checkout {
+      width: 100%;
+      max-width: 320px;
+      padding: 18px;
+      border-radius: 30px;
+      background: var(--white);
+      color: var(--black);
+      border: none;
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.8);
+      transition: transform 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-checkout:active {
+      transform: scale(0.96);
+    }
+    .btn-checkout:hover {
+      background: var(--light-grey);
+    }
+
+    /* ── LOADING / EMPTY ── */
+    #loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      color: var(--grey);
+    }
+
+    .loader-ring {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #222;
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loader-text {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: .4
+      }
+
+      50% {
+        opacity: 1
+      }
+    }
+
+    #empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--white);
+    }
+
+    .empty-sub {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--grey);
+    }
+
+    .btn-reload {
+      margin-top: 8px;
+      padding: 10px 28px;
+      border: 1px solid #333;
+      background: none;
+      color: var(--white);
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reload:hover {
+      border-color: var(--white);
+      background: #111;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--white);
+      color: var(--black);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 300;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── COUNTER ── */
+    .counter {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--grey);
+      text-align: center;
+      padding: 4px 0 0;
+    }
+
+    /* ── LIKED BADGE ── */
+    .liked-badge {
+      position: relative;
+    }
+
+    .liked-badge::after {
+      content: attr(data-count);
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--white);
+      color: var(--black);
+      font-size: 7px;
+      font-weight: 700;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .liked-badge[data-count]:not([data-count="0"])::after {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">NOIR<span>wear</span></div>
+    <div class="header-right">
+      <div class="header-tag" id="cat-label">All</div>
+      <div class="btn-action btn-info liked-badge" id="liked-btn" data-count="0"
+        style="font-size:14px; letter-spacing:0; width:36px; height:36px; border-radius:0;" onclick="openDrawer()">♥
+      </div>
+    </div>
+  </header>
+
+  <!-- CATEGORY PILLS -->
+  <div style="position:fixed;top:60px;left:0;right:0;z-index:90;background:var(--black);padding:10px 0 0;">
+    <div class="cats" id="cats">
+      <div class="cat-pill active" data-cat="trending fashion">Trending</div>
+      <div class="cat-pill" data-cat="luxury streetwear">Street</div>
+      <div class="cat-pill" data-cat="minimalist fashion clothing">Minimal</div>
+      <div class="cat-pill" data-cat="designer dresses women">Dresses</div>
+      <div class="cat-pill" data-cat="men fashion outfits">Menswear</div>
+      <div class="cat-pill" data-cat="sneakers fashion shoes">Shoes</div>
+      <div class="cat-pill" data-cat="fashion accessories bags">Bags</div>
+      <div class="cat-pill" data-cat="vintage fashion clothing">Vintage</div>
+    </div>
+  </div>
+
+  <!-- STAGE -->
+  <div id="stage">
+    <div id="card-stack">
+      <div id="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">Curating your feed</div>
+      </div>
+      <div id="empty-state">
+        <div class="empty-icon">◇</div>
+        <div class="empty-title">You've seen it all.</div>
+        <div class="empty-sub">Change category or refresh</div>
+        <button class="btn-reload" onclick="loadProducts()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="actions">
+      <div class="btn-action btn-nope" id="btn-nope" onclick="swipeCard('left')">✕</div>
+      <div class="btn-action btn-like" id="btn-like" onclick="swipeCard('right')">♥</div>
+    </div>
+    <div class="counter" id="counter"></div>
+  </footer>
+
+  <!-- LIKED DRAWER -->
+  <div id="liked-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">Saved Pieces</div>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="liked-grid" id="liked-grid">
+      <div
+        style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--grey);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">
+        Nothing saved yet.<br>Swipe right to save.
+      </div>
+    </div>
+    <div class="drawer-footer" id="drawer-footer" style="display: none;">
+      <button class="btn-checkout" onclick="alert('Proceeding to checkout UI...');">Checkout • <span id="checkout-count">0</span> items</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <script>
+    const API_KEY_PLACEHOLDER = '';  // handled by proxy
+
+    // ── STATE ──
+    let cards = [];
+    let currentIndex = 0;
+    let liked = [];
+    let currentCat = 'trending fashion';
+    let isAnimating = false;
+    let isDragging = false;
+    let startX = 0, startY = 0, currentX = 0;
+    let activeCard = null;
+
+    // ── DOM REFS ──
+    const stack = document.getElementById('card-stack');
+    const loader = document.getElementById('loader');
+    const empty = document.getElementById('empty-state');
+    const counter = document.getElementById('counter');
+    const likedGrid = document.getElementById('liked-grid');
+    const toast = document.getElementById('toast');
+    const likedBadge = document.getElementById('liked-btn');
+
+    // ── FETCH PRODUCTS VIA CLAUDE API + WEB SEARCH ──
+    async function loadProducts() {
+      showLoader(true);
+      empty.style.display = 'none';
+      clearCards();
+
+      const likedKeywords = liked.slice(-5).map(p => p.brand || p.name.split(' ')[0]).join(', ');
+      const prefHint = likedKeywords
+        ? `The user likes: ${likedKeywords}. Suggest similar styles.`
+        : '';
+
+      const prompt = `Search the web and find 8 real, currently available fashion products in the category: "${currentCat}".
+${prefHint}
+For each product return ONLY valid JSON (no markdown, no preamble) in this exact structure:
+[
+  {
+    "name": "Product name",
+    "brand": "Brand name",
+    "price": "$XX.XX",
+    "store": "Amazon/ASOS/Zara/etc",
+    "image": "https://... (direct image URL, must end in .jpg .jpeg .png .webp or contain image CDN domain)",
+    "link": "https://... (product page URL)",
+    "description": "One short sentence"
+  }
+]
+Rules:
+- Use REAL products with REAL working image URLs from sites like amazon.com, asos.com, zara.com, net-a-porter.com, farfetch.com, nordstrom.com, etc.
+- Image URLs must be direct image links (not HTML pages).
+- Prefer high-quality images with clean white or neutral backgrounds.
+- Return ONLY the JSON array, no other text.`;
+
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 2000,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        const data = await resp.json();
+
+        // Extract text from response (may have tool_use blocks)
+        let text = '';
+        if (data.content) {
+          for (const block of data.content) {
+            if (block.type === 'text') text += block.text;
+          }
+        }
+
+        // Parse JSON from text
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) throw new Error('No JSON array found');
+
+        let products = JSON.parse(jsonMatch[0]);
+        products = products.filter(p => p.name && p.image);
+
+        if (products.length === 0) throw new Error('No products');
+
+        cards = products;
+        currentIndex = 0;
+        renderCardsInit();
+        updateCounter();
+        showLoader(false);
+
+      } catch (err) {
+        console.error('Load error:', err);
+        // Fallback: use curated placeholder products
+        loadFallback();
+      }
+    }
+
+    function loadFallback() {
+      // Curated fashion placeholder data for offline/fallback
+      const fallbacks = {
+        'trending fashion': [
+          { name: 'Oversized Wool Blazer', brand: 'COS', price: '$195', store: 'COS', image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600', link: 'https://www.cos.com', description: 'Clean-cut oversized silhouette in premium wool.' },
+          { name: 'Tailored Wide-Leg Trousers', brand: 'Arket', price: '$149', store: 'Arket', image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600', link: 'https://www.arket.com', description: 'Fluid wide-leg cut in ecru.' },
+          { name: 'Ribbed Turtleneck', brand: 'Uniqlo', price: '$39.90', store: 'Uniqlo', image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600', link: 'https://www.uniqlo.com', description: 'Lightweight merino turtleneck.' },
+          { name: 'Trench Coat Classic', brand: 'Burberry', price: '$1,990', store: 'Nordstrom', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600', link: 'https://www.nordstrom.com', description: 'Iconic gabardine trench.' },
+          { name: 'Minimal Slip Dress', brand: 'Toteme', price: '$295', store: 'SSENSE', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600', link: 'https://www.ssense.com', description: 'Bias-cut silk-blend slip.' },
+          { name: 'Leather Ankle Boots', brand: 'A.P.C.', price: '$450', store: 'A.P.C.', image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600', link: 'https://www.apc.fr', description: 'Sleek ankle boot in smooth leather.' },
+          { name: 'Linen Shirt Dress', brand: 'Mango', price: '$79.99', store: 'Mango', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600', link: 'https://www.mango.com', description: 'Effortless linen shirt dress.' },
+          { name: 'Cashmere Crewneck', brand: 'Everlane', price: '$165', store: 'Everlane', image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600', link: 'https://www.everlane.com', description: 'Grade-A cashmere in neutral tones.' },
+        ],
+        default: [
+          { name: 'White Button-Down', brand: 'Theory', price: '$145', store: 'Theory', image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600', link: '#', description: 'Crisp poplin shirt.' },
+          { name: 'Black Midi Skirt', brand: 'Zara', price: '$49.99', store: 'Zara', image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600', link: '#', description: 'Satin finish midi skirt.' },
+          { name: 'Relaxed Denim Jacket', brand: 'Levi\'s', price: '$98', store: 'Levi\'s', image: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=600', link: '#', description: 'Vintage washed denim.' },
+          { name: 'Structured Tote', brand: 'Polène', price: '$285', store: 'Polène', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600', link: '#', description: 'Smooth leather tote.' },
+          { name: 'Knit Cardigan', brand: 'H&M', price: '$34.99', store: 'H&M', image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600', link: '#', description: 'Cozy oversized cardigan.' },
+          { name: 'Wide Brim Hat', brand: 'Lack of Color', price: '$120', store: 'ASOS', image: 'https://images.unsplash.com/photo-1572307480813-ceb0e59d8325?w=600', link: '#', description: 'Structured wool felt hat.' },
+        ]
+      };
+      const data = fallbacks[currentCat] || fallbacks['default'];
+      cards = data;
+      currentIndex = 0;
+      renderCardsInit();
+      updateCounter();
+      showLoader(false);
+    }
+
+    // ── RENDER CARDS ──
+    function renderCardsInit() {
+      // Remove existing cards, but keep loader/empty
+      stack.querySelectorAll('.card').forEach(c => c.remove());
+
+      if (cards.length === 0) {
+        showEmpty();
+        return;
+      }
+
+      // Render up to 5 cards initially
+      const toRender = cards.slice(currentIndex, currentIndex + 5);
+      // Render in reverse so the first card is the last child (top)
+      [...toRender].reverse().forEach((p, ri) => {
+        const cardIndex = currentIndex + (toRender.length - 1 - ri);
+        const card = createCard(p, cardIndex);
+        stack.appendChild(card);
+      });
+
+      updateActiveCardEvent();
+    }
+
+    function updateActiveCardEvent() {
+      const topCard = stack.lastElementChild;
+      if (topCard && topCard.classList.contains('card')) {
+        attachSwipeEvents(topCard);
+      }
+    }
+
+    function createCard(product, stackPos) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.index = stackPos;
+
+      card.innerHTML = `
+    <div class="card-img-wrap">
+      <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.src='https://placehold.co/400x600/111/fff?text=Image+Unavailable'">
+      <div class="card-store-badge">${product.store}</div>
+    </div>
+    <div class="card-overlay overlay-like"><div class="overlay-text">SAVE</div></div>
+    <div class="card-overlay overlay-nope"><div class="overlay-text">SKIP</div></div>
+    <div class="card-info">
+      <div>
+        <div class="card-brand">${product.brand}</div>
+        <div class="card-name">${product.name}</div>
+      </div>
+      <div class="card-meta">
+        <div class="card-price">${product.price}</div>
+        <a class="card-link" href="${product.link}" target="_blank" rel="noopener">Shop →</a>
+      </div>
+    </div>
+  `;
+      return card;
+    }
+
+    // ── SWIPE LOGIC ──
+    function attachSwipeEvents(card) {
+      // Prevent attaching multiple times
+      if (card.dataset.hasSwipe) return;
+      card.dataset.hasSwipe = "true";
+
+      // Touch
+      card.addEventListener('touchstart', onDragStart, { passive: true });
+      card.addEventListener('touchmove', onDragMove, { passive: false });
+      card.addEventListener('touchend', onDragEnd);
+      // Mouse
+      card.addEventListener('mousedown', onDragStart);
+    }
+
+    function getX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+    function getY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+
+    function onDragStart(e) {
+      if (isAnimating) return;
+      const tag = e.target.tagName;
+      if (tag === 'A') return;
+      isDragging = true;
+      activeCard = stack.querySelector('.card:last-child');
+      if (!activeCard) return;
+
+      startX = getX(e);
+      startY = getY(e);
+      currentX = 0;
+      activeCard.style.transition = 'none';
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseEnd);
+    }
+
+    function onDragMove(e) {
+      if (!isDragging || !activeCard) return;
+      if (e.cancelable) e.preventDefault();
+      currentX = getX(e) - startX;
+      const currentY = getY(e) - startY;
+      const rotate = currentX * 0.08;
+      activeCard.style.transform = `translateX(${currentX}px) translateY(${currentY * 0.3}px) rotate(${rotate}deg)`;
+
+      // Show overlays
+      const likeOverlay = activeCard.querySelector('.overlay-like');
+      const nopeOverlay = activeCard.querySelector('.overlay-nope');
+      const threshold = 40;
+      if (currentX > threshold) {
+        likeOverlay.style.opacity = Math.min((currentX - threshold) / 80, 1);
+        nopeOverlay.style.opacity = 0;
+      } else if (currentX < -threshold) {
+        nopeOverlay.style.opacity = Math.min((-currentX - threshold) / 80, 1);
+        likeOverlay.style.opacity = 0;
+      } else {
+        likeOverlay.style.opacity = 0;
+        nopeOverlay.style.opacity = 0;
+      }
+    }
+
+    function onMouseMove(e) { if (isDragging) onDragMove(e); }
+
+    function onDragEnd(e) {
+      if (!isDragging || !activeCard) return;
+      isDragging = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseEnd);
+
+      const swipeThreshold = 80;
+      if (currentX > swipeThreshold) {
+        flyCard('right');
+      } else if (currentX < -swipeThreshold) {
+        flyCard('left');
+      } else {
+        snapBack();
+      }
+    }
+
+    function onMouseEnd(e) { onDragEnd(e); }
+
+    function snapBack() {
+      if (!activeCard) return;
+      activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      activeCard.style.transform = '';
+      activeCard.querySelector('.overlay-like').style.opacity = 0;
+      activeCard.querySelector('.overlay-nope').style.opacity = 0;
+      activeCard = null;
+    }
+
+    function flyCard(direction) {
+      activeCard = stack.querySelector('.card:last-child');
+      if (!activeCard || isAnimating) return;
+      isAnimating = true;
+
+      const flyX = direction === 'right' ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
+      const rot = direction === 'right' ? 30 : -30;
+
+      // Show full overlay
+      const overlay = activeCard.querySelector(direction === 'right' ? '.overlay-like' : '.overlay-nope');
+      if (overlay) overlay.style.opacity = 1;
+
+      activeCard.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s';
+      activeCard.style.transform = `translate3d(${flyX}px, 50px, 0) rotate(${rot}deg)`;
+      activeCard.style.opacity = '0';
+
+      const product = cards[currentIndex];
+      if (direction === 'right') {
+        liked.push(product);
+        updateLikedBadge();
+        showToast('Saved ♥');
+        updateLikedDrawer();
+      } else {
+        showToast('Skipped');
+      }
+
+      currentIndex++;
+
+      setTimeout(() => {
+        activeCard.remove();
+        activeCard = null;
+        isAnimating = false;
+
+        // Add next card at the bottom of the stack (first child)
+        const nextIndex = currentIndex + 4; // since up to 5 cards are visible
+        if (nextIndex < cards.length) {
+          const newCard = createCard(cards[nextIndex], nextIndex);
+          // insert before the first card (bottom of stack)
+          const firstCard = stack.querySelector('.card:first-child');
+          if (firstCard) {
+            stack.insertBefore(newCard, firstCard);
+          } else {
+            stack.appendChild(newCard);
+          }
+        }
+
+        updateActiveCardEvent();
+        updateCounter();
+
+        // Auto-load more when nearing end
+        if (currentIndex >= cards.length - 2) {
+          loadProducts();
+        }
+      }, 400);
+    }
+
+    function swipeCard(direction) {
+      if (isAnimating) return;
+      flyCard(direction);
+    }
+
+    // ── UI HELPERS ──
+    function showLoader(show) {
+      loader.style.display = show ? 'flex' : 'none';
+    }
+    function showEmpty() {
+      empty.style.display = 'flex';
+      counter.textContent = '';
+    }
+    function clearCards() {
+      stack.querySelectorAll('.card').forEach(c => c.remove());
+    }
+    function updateCounter() {
+      const remaining = cards.length - currentIndex;
+      counter.textContent = remaining > 0 ? `${remaining} piece${remaining !== 1 ? 's' : ''} left` : '';
+    }
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1200);
+    }
+    function updateLikedBadge() {
+      likedBadge.dataset.count = liked.length;
+    }
+    function updateLikedDrawer() {
+      const drawerFooter = document.getElementById('drawer-footer');
+      if (liked.length === 0) {
+        drawerFooter.style.display = 'none';
+        likedGrid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--grey);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">
+            Nothing saved yet.<br>Swipe right to save.
+          </div>
+        `;
+        return;
+      }
+      
+      drawerFooter.style.display = 'flex';
+      document.getElementById('checkout-count').textContent = liked.length;
+
+      likedGrid.innerHTML = liked.map(p => `
+    <div class="liked-item">
+      <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null; this.src='https://placehold.co/400x600/111/fff?text=Unavailable'">
+      <div class="liked-item-info">
+        <div class="liked-item-name">${p.name}</div>
+        <div class="liked-item-price">${p.price} · ${p.store}</div>
+      </div>
+    </div>
+  `).join('');
+    }
+    function openDrawer() {
+      document.getElementById('liked-drawer').classList.add('open');
+    }
+    function closeDrawer() {
+      document.getElementById('liked-drawer').classList.remove('open');
+    }
+
+    // ── CATEGORIES ──
+    document.querySelectorAll('.cat-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCat = pill.dataset.cat;
+        document.getElementById('cat-label').textContent = pill.textContent;
+        cards = []; currentIndex = 0;
+        loadProducts();
+      });
+    });
+
+    // ── KEYBOARD SUPPORT ──
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') swipeCard('left');
+      if (e.key === 'ArrowRight') swipeCard('right');
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    // ── INIT ──
+    loadProducts();
+  </script>
+</body>
+
+</html>
