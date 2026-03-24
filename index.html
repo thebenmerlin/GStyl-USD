@@ -302,6 +302,43 @@
       padding: 14px 20px 28px;
     }
 
+    /* ── CAMERA MODAL ── */
+    #camera-modal {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #camera-modal.open { opacity: 1; pointer-events: auto; }
+    
+    .camera-sheet {
+      background: #111;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 30px 20px 40px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(.25, .46, .45, .94);
+      border-top: 1px solid #222;
+    }
+    #camera-modal.open .camera-sheet { transform: translateY(0); }
+    
+    .camera-sheet-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+    }
+    .camera-sheet-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300;
+    }
+    
+    .camera-btn {
+      background: none; border: none; color: var(--grey);
+      font-size: 20px; cursor: pointer; display: flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .camera-btn:hover, .camera-btn.active { color: var(--white); }
+
     .actions {
       display: flex;
       align-items: center;
@@ -683,7 +720,10 @@
 
   <!-- HEADER -->
   <header>
-    <div class="logo">NOIR<span>wear</span></div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="logo">NOIR<span>wear</span></div>
+      <button class="camera-btn" id="camera-btn" onclick="openCameraModal()" title="Analyze Skintone">📷</button>
+    </div>
     <div class="header-right">
       <div class="header-tag" id="cat-label">All</div>
       <div class="btn-action btn-info liked-badge" id="liked-btn" data-count="0"
@@ -751,6 +791,28 @@
   <!-- TOAST -->
   <div id="toast"></div>
 
+  <!-- CAMERA MODAL -->
+  <div id="camera-modal">
+    <div class="camera-sheet">
+      <div class="camera-sheet-header">
+        <div class="camera-sheet-title">Analyze Skintone</div>
+        <button class="drawer-close" onclick="closeCameraModal()">✕</button>
+      </div>
+      <div style="font-size: 11px; color: var(--grey); margin-bottom: 20px; letter-spacing: 0.05em; display:flex; justify-content:space-between; align-items:flex-end;">
+        <div>Position your face or hand inside the circle.</div>
+        <button onclick="clearCameraMemory()" style="background:none; border:none; color:var(--white); text-decoration:underline; font-family:'Courier Prime'; font-size:10px; cursor:pointer;" id="clear-skin-btn">Clear AI Match</button>
+      </div>
+      <div style="position: relative; width: 100%; height: 320px; border-radius: 16px; overflow: hidden; background: #000;">
+        <video id="camera-feed" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+        <!-- Overlay box shadow trick to dim everything outside the circle -->
+        <div style="position: absolute; top: 50%; left: 50%; width: 120px; height: 120px; border: 2px dashed rgba(255,255,255,0.8); transform: translate(-50%, -50%); border-radius: 50%; box-shadow: 0 0 0 4000px rgba(0,0,0,0.5); pointer-events: none;"></div>
+      </div>
+      <canvas id="capture-canvas" style="display:none;"></canvas>
+      <input type="file" id="fallback-camera" accept="image/*" capture="user" style="display:none;" onchange="handleFallbackImage(event)">
+      <button class="btn-reload" style="width: 100%; margin-top: 24px; padding: 16px; border-color: var(--white); background: var(--white); color: var(--black);" onclick="captureAndAnalyze()">Analyze & Tailor</button>
+    </div>
+  </div>
+
   <script>
     const API_KEY_PLACEHOLDER = '';  // handled by proxy
 
@@ -763,6 +825,7 @@
     let isDragging = false;
     let startX = 0, startY = 0, currentX = 0;
     let activeCard = null;
+    let userSkintone = null;
 
     // ── DOM REFS ──
     const stack = document.getElementById('card-stack');
@@ -780,9 +843,13 @@
       clearCards();
 
       const likedKeywords = liked.slice(-5).map(p => p.brand || p.name.split(' ')[0]).join(', ');
-      const prefHint = likedKeywords
+      let prefHint = likedKeywords
         ? `The user likes: ${likedKeywords}. Suggest similar styles.`
         : '';
+        
+      if (userSkintone) {
+        prefHint += ` IMPORTANT: Automatically filter recommendations to ONLY include fabric colors, tones, and styles that specifically flatter a "${userSkintone}" skin tone.`;
+      }
 
       const prompt = `Search the web and find 8 real, currently available fashion products in the category: "${currentCat}".
 ${prefHint}
@@ -1148,11 +1215,126 @@ Rules:
       });
     });
 
+    // ── CAMERA & AI ANALYSIS MODAL LOGIC ──
+    const videoElem = document.getElementById('camera-feed');
+    const canvasElem = document.getElementById('capture-canvas');
+    let videoStream = null;
+
+    const predefinedTones = [
+      { tone: "fair", r: 253, g: 245, b: 230 },
+      { tone: "light medium", r: 241, g: 194, b: 125 },
+      { tone: "olive / tan", r: 198, g: 134, b: 66 },
+      { tone: "rich brown", r: 141, g: 85, b: 36 },
+      { tone: "deep / ebony", r: 61, g: 34, b: 16 }
+    ];
+
+    async function openCameraModal() {
+      // Mobile Safari / Chrome won't expose mediaDevices if not running on HTTPS
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById('fallback-camera').click();
+        return;
+      }
+
+      document.getElementById('camera-modal').classList.add('open');
+      document.getElementById('clear-skin-btn').style.display = userSkintone ? 'block' : 'none';
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        videoElem.srcObject = videoStream;
+      } catch (err) {
+        showToast("Camera access denied.");
+        console.error("Camera error:", err);
+      }
+    }
+
+    function closeCameraModal() {
+      document.getElementById('camera-modal').classList.remove('open');
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+    }
+
+    function analyzePixels(ctx, width, height) {
+      // Calculate center 60px region representing the bounding circle for analysis
+      const size = 60;
+      const cx = width / 2;
+      const cy = height / 2;
+      const imgData = ctx.getImageData(cx - size/2, cy - size/2, size, size);
+      const data = imgData.data;
+
+      // Calculate average RGB of the region
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i+1];
+        b += data[i+2];
+        count++;
+      }
+      r = Math.round(r/count);
+      g = Math.round(g/count);
+      b = Math.round(b/count);
+
+      // Find nearest predefined palette via standard Euclidean distance
+      let bestMatch = predefinedTones[0];
+      let minDistance = Infinity;
+      for (const t of predefinedTones) {
+        const dist = Math.sqrt(Math.pow(t.r - r, 2) + Math.pow(t.g - g, 2) + Math.pow(t.b - b, 2));
+        if (dist < minDistance) {
+          minDistance = dist;
+          bestMatch = t;
+        }
+      }
+
+      userSkintone = bestMatch.tone;
+      document.getElementById('camera-btn').classList.add('active');
+      showToast('Detected Tone: ' + userSkintone.toUpperCase());
+      
+      closeCameraModal();
+      cards = []; currentIndex = 0;
+      loadProducts();
+    }
+
+    function captureAndAnalyze() {
+      if (!videoStream) return showToast("No camera feed.");
+      
+      canvasElem.width = videoElem.videoWidth;
+      canvasElem.height = videoElem.videoHeight;
+      const ctx = canvasElem.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(videoElem, 0, 0, canvasElem.width, canvasElem.height);
+      
+      analyzePixels(ctx, canvasElem.width, canvasElem.height);
+    }
+
+    function handleFallbackImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const img = new Image();
+      img.onload = function() {
+        canvasElem.width = img.width;
+        canvasElem.height = img.height;
+        const ctx = canvasElem.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        analyzePixels(ctx, img.width, img.height);
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
+    function clearCameraMemory() {
+      userSkintone = null;
+      document.getElementById('camera-btn').classList.remove('active');
+      showToast('Cleared AI Preferences');
+      closeCameraModal();
+    }
+
     // ── KEYBOARD SUPPORT ──
     document.addEventListener('keydown', e => {
       if (e.key === 'ArrowLeft') swipeCard('left');
       if (e.key === 'ArrowRight') swipeCard('right');
-      if (e.key === 'Escape') closeDrawer();
+      if (e.key === 'Escape') {
+        closeDrawer();
+        closeCameraModal();
+      }
     });
 
     // ── INIT ──
